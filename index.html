@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Airwaves — play music with your hands</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&family=Oswald:wght@700&family=Dancing+Script:wght@500&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="app">
+      <video id="webcam" autoplay playsinline muted></video>
+      <div id="tint"></div>
+      <canvas id="overlay"></canvas>
+
+      <!-- Start / onboarding screen -->
+      <section id="start-panel">
+        <p class="tagline">play the air</p>
+        <h1 class="display">AIRWAVES</h1>
+
+        <div class="glass-card">
+          <ul class="steps">
+            <li>
+              <span class="step-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              </span>
+              <span><strong>Lightly curl</strong> a finger to play — 8 fingers, 8 keys</span>
+            </li>
+            <li>
+              <span class="step-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18"/><path d="m7 8-4 4 4 4"/><path d="m17 8 4 4-4 4"/></svg>
+              </span>
+              <span><strong>Slide mode:</strong> move your hand left / right to reach every note</span>
+            </li>
+            <li>
+              <span class="step-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.5"/><circle cx="12" cy="8" r="2.5"/><circle cx="18" cy="12" r="2.5"/></svg>
+              </span>
+              <span>Curl <strong>several fingers</strong> at once for chords</span>
+            </li>
+          </ul>
+
+          <div class="start-actions">
+            <button id="start-btn" class="btn-primary">Start playing</button>
+            <button id="start-tutorial-btn" class="btn-secondary">Start with tutorial</button>
+          </div>
+          <p class="privacy-note">Everything runs on your device — the camera feed never leaves it.</p>
+          <p id="start-error" class="error" role="alert"></p>
+        </div>
+
+        <footer class="credit">MediaPipe Hands · Web Audio (Tone.js) · built by Shreyaan Datta</footer>
+      </section>
+
+      <!-- In-play HUD + tutorial stack: never overlap, at any width -->
+      <div id="top-stack">
+      <header id="hud" class="hidden">
+        <span class="hud-title">AIRWAVES</span>
+        <span id="note-readout" class="readout">L —&ensp;·&ensp;R —</span>
+        <button id="pause-btn" class="icon-btn" aria-label="Pause — turns the camera off">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+        </button>
+        <button id="record-btn" class="icon-btn" aria-label="Record a clip with sound" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="6"/></svg>
+          <span id="rec-timer" class="rec-timer hidden">0:00</span>
+        </button>
+      </header>
+
+      <!-- Interactive tutorial -->
+      <div id="tutorial" class="hidden">
+        <div class="tutorial-card">
+          <p class="tutorial-text"></p>
+          <div class="tutorial-footer">
+            <div class="tutorial-dots"></div>
+            <button class="tutorial-skip btn-ghost-sm">Skip</button>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <!-- Bottom stack: song header, always-on scale strip, control dock -->
+      <div id="bottom-stack">
+      <div id="song-bar" class="hidden">
+        <div class="song-header">
+          <span id="song-title" class="song-title"></span>
+          <span id="song-progress" class="song-progress"></span>
+          <button id="song-exit" class="btn-ghost-sm">Exit song</button>
+        </div>
+      </div>
+
+      <div id="strip" class="hidden">
+        <div id="lanes" class="lanes"></div>
+      </div>
+
+      <!-- Control dock -->
+      <div id="dock" class="hidden" role="toolbar" aria-label="Instrument controls">
+        <label class="dock-field">
+          Scale
+          <select id="scale-select"></select>
+        </label>
+        <label class="dock-field">
+          Root
+          <select id="root-select"></select>
+        </label>
+        <div class="dock-field">
+          Octave
+          <div class="stepper">
+            <button id="oct-down" class="stepper-btn" aria-label="Octave down">−</button>
+            <span id="oct-label" class="oct-label">C3</span>
+            <button id="oct-up" class="stepper-btn" aria-label="Octave up">+</button>
+          </div>
+        </div>
+        <label class="dock-field">
+          Mode
+          <select id="mode-select">
+            <option value="fingers" selected>Finger keys</option>
+            <option value="slide">Finger slide</option>
+          </select>
+        </label>
+        <label class="dock-field">
+          Song
+          <select id="song-select">
+            <option value="" selected>Play a song…</option>
+          </select>
+        </label>
+        <button id="tutorial-btn" class="btn-toggle">Tutorial</button>
+      </div>
+      </div>
+
+      <!-- Paused (camera off) -->
+      <div id="paused-overlay" class="hidden">
+        <div class="glass-card paused-card">
+          <span class="step-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16v1a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1"/><path d="m22 8-6 4 6 4V8"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+          </span>
+          <p><strong>Paused — camera is off.</strong><br />Nothing is being captured. Resume when you're ready.</p>
+          <button id="resume-btn" class="btn-primary">Resume playing</button>
+          <p id="resume-error" class="error" role="alert"></p>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
