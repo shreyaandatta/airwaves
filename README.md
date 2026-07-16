@@ -8,7 +8,7 @@ Your webcam tracks your hands 21 landmarks at a time; your 8 non-thumb fingers b
 >
 > `![Airwaves demo](docs/demo.gif)`
 
-**Live demo:** *(link goes here)*
+**🔗 Live demo: [airwavesbysd.vercel.app](https://airwavesbysd.vercel.app/)** — open in desktop Chrome, allow the camera, and lightly curl a finger to play.
 
 ## Why it's interesting (the hard parts)
 
